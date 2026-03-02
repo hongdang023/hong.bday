@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinh Nhật Hồng - Lời Mời & Wishlist</title>
+    <meta name="description" content="Thiệp mời sinh nhật và Wishlist từ Hồng.">
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="background-img"></div>
+    <div class="star-particles"></div>
+
+    <!-- Video Section -->
+    <div id="videoSection" class="video-section">
+        <video id="openingVideo" playsinline preload="auto">
+            <source src="Opening Animation.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="container hidden" id="mainContainer">
+        <!-- Invitation Section -->
+        <header class="section card custom-border-card" id="invitationSection">
+            <img src="DANGHONG22 – Đã sửa.png" alt="Lời mời từ Hồng" class="header-img">
+
+            <div class="loading-state" id="loadingGuestInfo">
+                <div class="spinner"></div>
+                <p>Đang tải thông tin thư mời...</p>
+            </div>
+
+            <div class="guest-info hidden" id="guestInfo">
+                <div id="letterBody" class="letter-body"></div>
+                <div id="voteWidget" class="hidden"></div>
+            </div>
+
+            <div class="error-msg hidden" id="guestError">
+                <p>Không tìm thấy thông tin khách mời. Bạn kiểm tra lại đường link giúp Hồng nhé.</p>
+            </div>
+        </header>
+
+        <!-- Wishlist Section -->
+        <section class="section custom-border-card hidden" id="wishlistSection">
+            <img src="My Wishlist - Đã sửa.png" alt="Wishlist của Hồng" class="header-img">
+            <p class="section-subtitle">Danh sách những món đồ Hồng đang nhắm tới. Các món đồ hiển thị ở đây là chưa
+                có người chọn, để mọi người không bị chọn trùng nhau nhé.</p>
+
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Tất cả</button>
+                <button class="filter-btn" data-filter="low">Dưới 200k</button>
+                <button class="filter-btn" data-filter="mid">200k - 500k</button>
+                <button class="filter-btn" data-filter="high">Trên 500k</button>
+            </div>
+
+            <div class="wishlist-grid" id="wishlistGrid"></div>
+        </section>
+
+        <footer class="footer">
+            <p>From Hồng with love 💜</p>
+        </footer>
+    </div>
+
+    <!-- Modal: Claim Gift -->
+    <div class="modal" id="claimModal">
+        <div class="modal-content custom-border-card">
+            <h3 id="modalGiftName">Tên Món Quà</h3>
+            <p class="modal-text">Bạn muốn chọn tặng món quà này cho Hồng thật chứ?</p>
+            <p class="note">Sau khi xác nhận, món quà này sẽ được ẩn đi trên trang để những người khác biết đã có
+                người chọn rồi (hoàn toàn ẩn danh).</p>
+            <div class="modal-actions">
+                <button class="btn secondary-btn" id="cancelClaim">Hủy bỏ</button>
+                <button class="btn primary-btn" id="confirmClaim">Chốt món này</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: RSVP -->
+    <div class="modal" id="rsvpModal">
+        <div class="modal-content custom-border-card">
+            <h3>Tôi sẽ tham dự 🎉</h3>
+            <p class="modal-text">Hồng rất vui khi <strong id="rsvpGuestName"></strong> sẽ tham dự!</p>
+            <p class="note">Nhập email để Hồng gửi Google Calendar invite cho bạn nhé.</p>
+            <div class="rsvp-form">
+                <input type="email" id="rsvpEmail" placeholder="Email của bạn" class="rsvp-input">
+                <textarea id="rsvpNote" placeholder="Nhắn gì cho Hồng không? (không bắt buộc)" class="rsvp-textarea"
+                    rows="2"></textarea>
+                <div id="rsvpStatus" class="rsvp-status"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn secondary-btn" id="cancelRSVP">Để sau</button>
+                <button class="btn accent-btn" id="rsvpSubmitBtn">Xác nhận tham dự</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Guest List -->
+    <div class="modal" id="guestListModal">
+        <div class="modal-content custom-border-card">
+            <h3>Ai cùng đến hôm đó?</h3>
+            <p class="note">Những người bạn Hồng mời trong cùng nhóm:</p>
+            <ul id="guestListContent" class="guest-list-names"></ul>
+            <div class="modal-actions">
+                <button class="btn secondary-btn" id="closeGuestListModal">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

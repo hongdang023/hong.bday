@@ -1,0 +1,625 @@
+:root {
+    --primary-color: #ff8da1;
+    /* soft pink */
+    --secondary-color: #6a5acd;
+    /* slate blue/purple */
+    --accent-color: #F15A24;
+    /* deep orange for border */
+    --text-color: #333;
+    --card-bg: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: var(--text-color);
+    background-color: #d1b3ff;
+}
+
+/* Background Image Layer */
+.background-img {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* PLACEHOLDER cho ảnh background hoàng hôn Steven Universe */
+    background: url('bg_steven_universe.webp') no-repeat center center;
+    background-size: cover;
+    z-index: -2;
+}
+
+.star-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-image:
+        radial-gradient(white, rgba(255, 255, 255, .2) 2px, transparent 10px),
+        radial-gradient(white, rgba(255, 255, 255, .15) 1px, transparent 5px),
+        radial-gradient(white, rgba(255, 255, 255, .1) 2px, transparent 10px);
+    background-size: 550px 550px, 350px 350px, 250px 250px;
+    background-position: 0 0, 40px 60px, 130px 270px;
+    animation: twinkle 15s linear infinite;
+}
+
+@keyframes twinkle {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-500px);
+    }
+}
+
+/* Overlay & Video Sections */
+.video-section {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.video-section video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Don't crop if ratio doesn't match perfectly */
+}
+
+.header-img {
+    width: 100%;
+    max-width: 450px;
+    display: block;
+    margin: -15px auto 10px;
+    object-fit: contain;
+}
+
+h2,
+h3 {
+    font-family: 'Baloo 2', cursive;
+    color: var(--secondary-color);
+}
+
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    position: relative;
+    z-index: 10;
+}
+
+/* Custom Card Style based on Image 2 */
+.custom-border-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    border: 4px solid var(--accent-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding: 35px 30px;
+    margin-bottom: 50px;
+    position: relative;
+    color: var(--text-color);
+}
+
+/* Inner dashed border */
+.custom-border-card::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 2px dashed var(--secondary-color);
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+/* Ensure inner content respects the pseudo-element border */
+.custom-border-card>* {
+    position: relative;
+    z-index: 2;
+}
+
+.highlight {
+    color: var(--secondary-color);
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* ─── Letter Body ─────────────────────────────────────────────────────────── */
+.letter-body {
+    text-align: left;
+}
+
+.letter-salutation {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    margin-bottom: 18px;
+}
+
+.letter-p {
+    font-size: 0.97rem;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 14px;
+    text-align: justify;
+}
+
+.special-divider {
+    text-align: center;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.05rem;
+    color: var(--accent-color);
+    border-top: 2px dashed #f5cbb0;
+    border-bottom: 2px dashed #f5cbb0;
+    padding: 10px 0;
+    margin: 22px 0;
+    letter-spacing: 1px;
+}
+
+.gift-alternatives {
+    padding-left: 20px;
+    margin-bottom: 14px;
+}
+
+.gift-alternatives li {
+    font-size: 0.97rem;
+    line-height: 1.75;
+    color: #444;
+    margin-bottom: 8px;
+    text-align: justify;
+}
+
+.letter-closing {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+    margin-top: 20px;
+    margin-bottom: 4px;
+}
+
+.letter-sign {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.6;
+    margin-top: 0;
+}
+
+.cta-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 22px 0;
+}
+
+.guest-list-names {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.guest-list-names li {
+    background: #f5eeff;
+    border: 1px solid #d0b8ff;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+.event-details {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: var(--secondary-color);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.detail-value {
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+
+.btn {
+    display: block;
+    width: fit-content;
+    padding: 12px 28px;
+    border-radius: 30px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.primary-btn {
+    background: var(--primary-color);
+    color: white;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+    border: 2px solid #ff728c;
+    box-shadow: 0 4px 0 #ff728c;
+}
+
+.primary-btn:hover {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #ff728c;
+}
+
+.secondary-btn {
+    background: #f0f0f0;
+    color: #555;
+    border: 2px solid #ccc;
+    box-shadow: 0 4px 0 #ccc;
+}
+
+.secondary-btn:hover {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #ccc;
+}
+
+.accent-btn {
+    background: var(--accent-color);
+    color: white;
+    border: 2px solid #c94a1a;
+    box-shadow: 0 4px 0 #c94a1a;
+}
+
+.accent-btn:hover {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #c94a1a;
+}
+
+/* ─── RSVP Form ─────────────────────────────────────────────────────────────── */
+.rsvp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 14px 0;
+}
+
+.rsvp-input,
+.rsvp-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.95rem;
+    color: #333;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.rsvp-input:focus,
+.rsvp-textarea:focus {
+    border-color: var(--secondary-color);
+}
+
+.rsvp-textarea {
+    resize: none;
+}
+
+.rsvp-status {
+    font-size: 0.9rem;
+    min-height: 20px;
+    text-align: center;
+}
+
+.rsvp-status.success {
+    color: #2a9d5c;
+    font-weight: 600;
+}
+
+.rsvp-status.error {
+    color: #e63946;
+}
+
+
+
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 2px solid var(--secondary-color);
+    background: transparent;
+    color: var(--secondary-color);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.gift-card {
+    background: #fdfaf6;
+    border-radius: 12px;
+    padding: 25px 20px;
+    text-align: center;
+    border: 1px solid #eaeaea;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.gift-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.gift-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.gift-price {
+    color: var(--secondary-color);
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.gift-variant {
+    color: #888;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+.gift-link {
+    display: inline-block;
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+    text-decoration: underline;
+    margin-bottom: 15px;
+}
+
+.gift-link:hover {
+    color: var(--primary-color);
+}
+
+.claim-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+    background: #a0e0ff;
+    color: #333;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.claim-btn:hover {
+    background: #75cfff;
+}
+
+.gift-card.my-claim {
+    border: 2px dashed var(--primary-color);
+    background: #fffcfd;
+}
+
+.gift-card.my-claim .claim-btn {
+    background: #ededed;
+    color: #888;
+}
+
+/* Modal CSS */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    text-align: center;
+    margin: 0;
+    /* Reset margin for modal */
+}
+
+.modal-text {
+    font-size: 1.1rem;
+    margin: 20px 0;
+}
+
+.note {
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.05);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border-left-color: var(--secondary-color);
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    font-family: 'Baloo 2', cursive;
+    letter-spacing: 1px;
+}
+
+/* ─── Vote Widget ────────────────────────────────────────────────────────────── */
+.vote-section {
+    padding: 8px 0 16px;
+}
+
+.vote-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 0 12px;
+}
+
+.vote-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f5eeff;
+    border: 2px solid #d0b8ff;
+    border-radius: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.95rem;
+    text-align: left;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.vote-btn.voted {
+    border-color: var(--secondary-color);
+    background: #ede7ff;
+    font-weight: 700;
+}
+
+.vote-btn:hover {
+    border-color: var(--secondary-color);
+}
+
+.vote-label {
+    flex: 0 0 auto;
+    min-width: 140px;
+}
+
+.vote-bar-wrap {
+    flex: 1;
+    background: #e0d6ff;
+    border-radius: 6px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.vote-bar {
+    display: block;
+    height: 100%;
+    background: var(--secondary-color);
+    border-radius: 6px;
+    transition: width 0.4s ease;
+}
+
+.vote-count {
+    flex: 0 0 auto;
+    font-size: 0.82rem;
+    color: #888;
+    min-width: 60px;
+    text-align: right;
+}
+
+.vote-btn.voted .vote-count {
+    color: var(--secondary-color);
+}
+
+.vote-caption {
+    text-align: center;
+    font-size: 0.88rem;
+    color: #888;
+    margin-top: 4px;
+    font-style: italic;
+}
