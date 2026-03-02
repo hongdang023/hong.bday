@@ -135,6 +135,14 @@ function initPasswordFlow() {
             pwdSection.classList.add('hidden');
             videoSection.classList.remove('hidden');
 
+            // Attempt to autoplay video immediately
+            const video = document.getElementById('openingVideo');
+            if (video) {
+                video.play().catch(err => {
+                    console.warn("Autoplay was prevented:", err);
+                });
+            }
+
             // Kick off the invitation load
             initInvitation(guest);
         } else {
@@ -286,8 +294,12 @@ function renderLetter(guest) {
 
     // RSVP CTA
     document.getElementById('rsvpBtn').addEventListener('click', () => {
-        document.getElementById('rsvpGuestName').innerText = `${x} ${ten}`;
-        document.getElementById('rsvpModal').classList.add('active');
+        if (document.getElementById('rsvpBtn').dataset.isVote === 'true') {
+            document.getElementById('voteModal').classList.add('active');
+        } else {
+            document.getElementById('rsvpGuestName').innerText = `${x} ${ten}`;
+            document.getElementById('rsvpModal').classList.add('active');
+        }
     });
 
     // Guest List CTA
@@ -316,16 +328,21 @@ function initVoteWidget(guest) {
 
     voteRef.on('value', snapshot => {
         const data = snapshot.val();
-        const container = document.getElementById('voteWidget');
-        if (!container) return;
+        const rsvpBtn = document.getElementById('rsvpBtn');
+        const voteModalBody = document.getElementById('voteModalBody');
+        if (!rsvpBtn || !voteModalBody) return;
 
         if (!data || !data.options || data.options.length === 0) {
-            container.innerHTML = '';
-            container.classList.add('hidden');
+            // Restore normal RSVP button
+            rsvpBtn.innerText = 'Tôi sẽ tham dự 🎉';
+            rsvpBtn.dataset.isVote = 'false';
             return;
         }
 
-        container.classList.remove('hidden');
+        // We have active vote options!!
+        rsvpBtn.innerText = 'Vote lịch tham gia tại đây 📅';
+        rsvpBtn.dataset.isVote = 'true';
+
         const myVote = data.responses ? data.responses[guest.ID] : null;
 
         // Count votes per option
@@ -338,10 +355,9 @@ function initVoteWidget(guest) {
         }
         const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
-        container.innerHTML = `
-            <div class="vote-section">
-                <div class="special-divider">📅 Bình chọn ngày</div>
-                <p class="letter-p" style="text-align:center;margin-bottom:16px;">
+        voteModalBody.innerHTML = `
+            <div class="vote-section" style="border:none; padding:10px 0 0 0; background:none;">
+                <p class="letter-p" style="text-align:center; font-size: 0.95rem; margin-bottom:16px;">
                     Hồng đang chốt lịch cho nhóm mình — ${guest.Xungho} chọn ngày nào tiện nhất nhé!
                 </p>
                 <div class="vote-options">
@@ -363,10 +379,14 @@ function initVoteWidget(guest) {
         }).join('')}
                 </div>
                 ${myVote ? `<p class="vote-caption">Bạn đã chọn: <strong>${myVote}</strong> — bấm vào ngày khác để đổi ý.</p>` : ''}
+                
+                <div style="margin-top:20px; font-size: 0.85rem; color: var(--secondary-color); font-style: italic; text-align: center; border-top: 1px dashed #d0b8ff; padding-top: 15px;">
+                    * Lưu ý: Lịch trình chốt cứng (thời gian & địa điểm) sẽ được chúng mình cập nhật thêm qua Google Calendar nhé!
+                </div>
             </div>
         `;
 
-        container.querySelectorAll('.vote-btn').forEach(btn => {
+        voteModalBody.querySelectorAll('.vote-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const opt = btn.dataset.option;
                 const pref = btn.dataset.prefix;
@@ -606,13 +626,21 @@ function initModals() {
     document.getElementById('rsvpSubmitBtn').onclick = submitRSVP;
 
     // Guest list modal
-    document.getElementById('closeGuestListModal').onclick = () =>
-        document.getElementById('guestListModal').classList.remove('active');
+    const closeGuestModalBtn = document.getElementById('closeGuestListModal');
+    if (closeGuestModalBtn) {
+        closeGuestModalBtn.onclick = () => document.getElementById('guestListModal').classList.remove('active');
+    }
+
+    // Vote modal
+    const closeVoteModalBtn = document.getElementById('closeVoteModal');
+    if (closeVoteModalBtn) {
+        closeVoteModalBtn.onclick = () => document.getElementById('voteModal').classList.remove('active');
+    }
 
     window.onclick = e => {
-        ['claimModal', 'rsvpModal', 'guestListModal'].forEach(id => {
+        ['claimModal', 'rsvpModal', 'guestListModal', 'voteModal'].forEach(id => {
             const m = document.getElementById(id);
-            if (e.target === m) m.classList.remove('active');
+            if (m && e.target === m) m.classList.remove('active');
         });
     };
 }

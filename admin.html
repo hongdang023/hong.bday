@@ -849,15 +849,16 @@
 
                 const xHLower = (g.Xungho === 'Bạn' || g.Xungho === 'Bro') ? g.Xungho : g.Xungho.toLowerCase();
                 const msgTemplate = `Hellu ${g.Xungho} ${g.Ten}, Hồng xin gửi ${xHLower} thiệp mời đến buổi sinh nhật của em: https://hong-bday.vercel.app/\n\n${g.Xungho} vui lòng nhập password là ${g.ID} nhé. Đây là website do em tự build nên nếu có dính bug, mong ${xHLower} thông cảm ạ ^^`;
+                const escapedMsgTemplate = msgTemplate.replace(/'/g, "\\'").replace(/\n/g, "\\n");
 
                 return `<tr>
                 <td><code>${g.ID}</code></td>
                 <td><strong>${g.Xungho} ${g.Ten}</strong></td>
                 <td><span style="color:${getGroupColor(prefix)}; font-weight:bold;">[${prefix}]</span></td>
                 <td>
-                    <button onclick="copyToClipboard('${msgTemplate.replace(/'/g, "\\'")}')" 
+                    <button onclick="copyToClipboard('${escapedMsgTemplate}')" 
                             style="background:#f0ebff; border:1px solid #d0b8ff; color:#6a5acd; border-radius:6px; padding:6px 10px; font-size:0.8rem; cursor:pointer;"
-                            title="Copy tin nhắn: ${msgTemplate}">🔗 Copy gửi liền</button>
+                            title="Copy tin nhắn">🔗 Copy gửi liền</button>
                 </td>
                 <td style="line-height:1.4;">
                     <div style="display:flex; justify-content:flex-start; align-items:center; gap: 24px;">
@@ -915,11 +916,11 @@
                 const members = groups[prefix];
                 const color = getGroupColor(prefix);
                 const override = groupOverrides[prefix] || {};
-                const lockedTime = override.Thoigian || members[0].Thoigian || 'Cập nhật sau';
+                const effectiveTime = override.Thoigian || members[0].Thoigian || '';
+                const lockedTime = effectiveTime ? effectiveTime : 'Cập nhật sau';
                 const lockedPlace = override.Diadiem || members[0].Diadiem || 'Cập nhật sau';
 
-                const hasCsvLock = (members[0].Thoigian && members[0].Thoigian !== 'Cập nhật sau');
-                const isLocked = !!(override.Thoigian || hasCsvLock);
+                const isLocked = effectiveTime.trim() !== '' && effectiveTime.trim().toLowerCase() !== 'cập nhật sau';
                 const editBtnText = isLocked ? '✏️ Đổi lịch' : '✏️ Chốt lịch';
                 const voteBtnStyle = isLocked ? 'background:#f0f0f0; color:#aaa; cursor:not-allowed;' : 'background:#e0d8ff; color:#5649b0; cursor:pointer;';
 

@@ -46,7 +46,6 @@
 
             <div class="guest-info hidden" id="guestInfo">
                 <div id="letterBody" class="letter-body"></div>
-                <div id="voteWidget" class="hidden"></div>
             </div>
 
             <div class="error-msg hidden" id="guestError">
@@ -116,6 +115,17 @@
             <ul id="guestListContent" class="guest-list-names"></ul>
             <div class="modal-actions">
                 <button class="btn secondary-btn" id="closeGuestListModal">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Vote Widget -->
+    <div class="modal" id="voteModal">
+        <div class="modal-content custom-border-card">
+            <h3>📅 Nhóm mình cùng chọn ngày nhé</h3>
+            <div id="voteModalBody"></div>
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="btn secondary-btn" id="closeVoteModal">Để xem xét sau</button>
             </div>
         </div>
     </div>
