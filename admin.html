@@ -721,7 +721,16 @@
         function getPrefix(id) { return (id.match(/^[A-Za-z]+/) || [id])[0]; }
 
         function getCombinedGuests() {
-            let combined = [...allGuests];
+            let combined = allGuests.map(g => {
+                const pref = getPrefix(g.ID);
+                const override = groupOverrides[pref] || {};
+                return {
+                    ...g,
+                    Thoigian: override.Thoigian || g.Thoigian,
+                    Diadiem: override.Diadiem || g.Diadiem
+                };
+            });
+
             if (extraGuestData) {
                 for (let pref in extraGuestData) {
                     const arr = Array.isArray(extraGuestData[pref]) ? extraGuestData[pref] : Object.values(extraGuestData[pref]);
@@ -824,7 +833,7 @@
 
             // Build event map: day → list of groups
             const eventsByDay = {};
-            const groups = groupGuests(allGuests);
+            const groups = groupGuests(getCombinedGuests());
             Object.entries(groups).forEach(([prefix, members]) => {
                 const time = members[0].Thoigian || '';
                 const parsed = parseDateFromTime(time);
@@ -872,7 +881,7 @@
             <th>Trạng thái (Đã mở thiệp / RSVP)</th>
         </tr></thead>
         <tbody>
-        ${allGuests.map(g => {
+        ${getCombinedGuests().map(g => {
                 const track = trackingData[g.ID] || {};
 
                 // Opened status
@@ -884,9 +893,12 @@
 
                 // RSVP status
                 let rsvpBadge = '<span class="badge-rsvp rsvp-wait">Chưa reply</span>';
+                let extraInfo = '';
                 if (track.rsvp) {
                     const d = new Date(track.rsvp.timestamp);
-                    rsvpBadge = `<span class="badge-rsvp rsvp-yes" title="Email: ${track.rsvp.email || ''}&#10;Note: ${track.rsvp.note || ''}">Có ✓<br><small style="font-size:0.75rem;opacity:0.9">${d.getDate()}/${d.getMonth() + 1} ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}</small></span>`;
+                    rsvpBadge = `<span class="badge-rsvp rsvp-yes">Có ✓<br><small style="font-size:0.75rem;opacity:0.9">${d.getDate()}/${d.getMonth() + 1} ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}</small></span>`;
+                    if (track.rsvp.email) extraInfo += `<div style="margin-top:4px;"><small style="color:#6a5acd;font-weight:600;">📧 ${track.rsvp.email}</small></div>`;
+                    if (track.rsvp.note) extraInfo += `<div><small style="color:#777;font-style:italic;">💬 ${track.rsvp.note}</small></div>`;
                 } else if (g.RSVP && g.RSVP.toLowerCase() === 'có') {
                     rsvpBadge = '<span class="badge-rsvp rsvp-yes">Có ✓</span>';
                 } else if (g.RSVP && g.RSVP.toLowerCase() === 'không') {
@@ -909,9 +921,9 @@
                             title="Copy tin nhắn">🔗 Copy gửi liền</button>
                 </td>
                 <td style="line-height:1.4;">
-                    <div style="display:flex; justify-content:flex-start; align-items:center; gap: 24px;">
+                    <div style="display:flex; justify-content:flex-start; align-items:flex-start; gap: 24px;">
                         <div>${openedBadge}</div>
-                        <div>${rsvpBadge}</div>
+                        <div>${rsvpBadge}${extraInfo}</div>
                     </div>
                 </td>
             </tr>`;
@@ -957,7 +969,7 @@
         function renderGroupManage() {
             const el = document.getElementById('groupManageContent');
             if (!el) return;
-            const groups = groupGuests(allGuests);
+            const groups = groupGuests(getCombinedGuests());
             const prefixes = Object.keys(groups).sort();
 
             el.innerHTML = prefixes.map(prefix => {
