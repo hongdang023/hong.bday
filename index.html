@@ -16,8 +16,19 @@
     <div class="background-img"></div>
     <div class="star-particles"></div>
 
+    <!-- Password Gate -->
+    <div id="passwordSection" class="password-section">
+        <div class="password-content custom-border-card">
+            <h2 class="password-title">Dạ cho Hồng hỏi ai đấy ạ? 👀</h2>
+            <p class="password-desc">Vui lòng nhập Password <i>(đã được gửi kèm link)</i> để mở thiệp nhé!</p>
+            <input type="text" id="guestPasswordInput" placeholder="VD: MO1" class="password-input" autocomplete="off">
+            <p id="passwordError" class="password-error">Mã không đúng, bạn kiểm tra lại nha!</p>
+            <button id="passwordSubmitBtn" class="btn primary-btn" style="width:100%;">Mở thiệp 💌</button>
+        </div>
+    </div>
+
     <!-- Video Section -->
-    <div id="videoSection" class="video-section">
+    <div id="videoSection" class="video-section hidden">
         <video id="openingVideo" playsinline preload="auto">
             <source src="Opening Animation.mp4" type="video/mp4">
         </video>

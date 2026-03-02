@@ -846,7 +846,9 @@
                 }
 
                 const prefix = (g.ID.match(/^[A-Za-z]+/) || [''])[0];
-                const msgTemplate = `Ê ${g.Ten} ơi đi sinh nhật tui nha: https://hongbday.vercel.app/?id=${g.ID}`;
+
+                const xHLower = (g.Xungho === 'Bạn' || g.Xungho === 'Bro') ? g.Xungho : g.Xungho.toLowerCase();
+                const msgTemplate = `Hellu ${g.Xungho} ${g.Ten}, Hồng xin gửi ${xHLower} thiệp mời đến buổi sinh nhật của em: https://hong-bday.vercel.app/\n\n${g.Xungho} vui lòng nhập password là ${g.ID} nhé. Đây là website do em tự build nên nếu có dính bug, mong ${xHLower} thông cảm ạ ^^`;
 
                 return `<tr>
                 <td><code>${g.ID}</code></td>

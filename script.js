@@ -92,11 +92,64 @@ function parseFullCSV(text) {
 
 const firebaseReady = initFirebase();
 
-document.addEventListener('DOMContentLoaded', () => {
+let allGuests = [];
+let currentGuest = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        allGuests = await loadCSV(GUESTS_URL);
+    } catch (e) { console.error("Could not load guests:", e); }
+
+    initPasswordFlow();
     initVideoFlow();
-    initInvitation();
     initModals();
 });
+
+// ─── Password Flow ────────────────────────────────────────────────────────────
+
+function initPasswordFlow() {
+    const pwdBtn = document.getElementById('passwordSubmitBtn');
+    const pwdInput = document.getElementById('guestPasswordInput');
+    const pwdSection = document.getElementById('passwordSection');
+    const videoSection = document.getElementById('videoSection');
+    const errorMsg = document.getElementById('passwordError');
+
+    // Auto-fill if ID is provided in URL (optional convenience)
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFromUrl = urlParams.get('id');
+    if (idFromUrl) {
+        pwdInput.value = idFromUrl;
+    }
+
+    const checkPassword = () => {
+        const val = pwdInput.value.trim().toUpperCase();
+        if (!val) {
+            errorMsg.classList.add('show');
+            return;
+        }
+
+        const guest = allGuests.find(g => g.ID.toUpperCase() === val);
+
+        if (guest) {
+            errorMsg.classList.remove('show');
+            pwdSection.classList.add('hidden');
+            videoSection.classList.remove('hidden');
+
+            // Kick off the invitation load
+            initInvitation(guest);
+        } else {
+            errorMsg.classList.add('show');
+            pwdInput.focus();
+        }
+    };
+
+    if (pwdBtn && pwdInput) {
+        pwdBtn.addEventListener('click', checkPassword);
+        pwdInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkPassword();
+        });
+    }
+}
 
 // ─── Video Flow ───────────────────────────────────────────────────────────────
 
@@ -126,59 +179,47 @@ function initVideoFlow() {
 
 // ─── Invitation ───────────────────────────────────────────────────────────────
 
-let allGuests = [];
-let currentGuest = null;
+async function initInvitation(guest) {
+    document.getElementById('loadingGuestInfo').classList.add('hidden');
 
-async function initInvitation() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const guestId = urlParams.get('id') || 'MO1';
+    if (guest) {
+        currentGuest = guest;
+        const guestId = guest.ID;
+        const prefix = guestId.match(/^[A-Za-z]+/)?.[0] || '';
 
-    try {
-        allGuests = await loadCSV(GUESTS_URL);
-        const guest = allGuests.find(g => g.ID === guestId);
+        if (FIREBASE_CONFIG.apiKey !== 'REPLACE_ME' && typeof firebase !== 'undefined') {
+            try {
+                if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
 
-        document.getElementById('loadingGuestInfo').classList.add('hidden');
+                // 1. Log opened status
+                firebase.database().ref(`tracking/${guestId}`).update({
+                    opened: true,
+                    openedAt: new Date().toISOString()
+                });
 
-        if (guest) {
-            currentGuest = guest;
-            const prefix = guestId.match(/^[A-Za-z]+/)?.[0] || '';
-            if (FIREBASE_CONFIG.apiKey !== 'REPLACE_ME' && typeof firebase !== 'undefined') {
-                try {
-                    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-
-                    // 1. Log opened status
-                    firebase.database().ref(`tracking/${guestId}`).update({
-                        opened: true,
-                        openedAt: new Date().toISOString()
-                    });
-
-                    // 2. Override time/place if admin locked
-                    const snap = await firebase.database().ref(`groups/${prefix}`).once('value');
-                    const groupData = snap.val();
-                    if (groupData) {
-                        if (groupData.Thoigian) guest.Thoigian = groupData.Thoigian;
-                        if (groupData.Diadiem) guest.Diadiem = groupData.Diadiem;
-                    }
-                    // 3. Extra guests
-                    const extraSnap = await firebase.database().ref(`extraGuests/${prefix}`).once('value');
-                    const extra = extraSnap.val();
-                    if (extra) {
-                        const extraArr = Array.isArray(extra) ? extra : Object.values(extra);
-                        allGuests = [...allGuests, ...extraArr.map((e, i) => ({
-                            ID: `${prefix}X${i}`, Ten: e.Ten, Xungho: e.Xungho || 'Bạn',
-                            Thoigian: guest.Thoigian, Diadiem: guest.Diadiem
-                        }))];
-                    }
-                } catch (e) { console.warn('Firebase init/tracking:', e); }
-            }
-            document.getElementById('guestInfo').classList.remove('hidden');
-            renderLetter(guest);
-        } else {
-            document.getElementById('guestError').classList.remove('hidden');
+                // 2. Override time/place if admin locked
+                const snap = await firebase.database().ref(`groups/${prefix}`).once('value');
+                const groupData = snap.val();
+                if (groupData) {
+                    if (groupData.Thoigian) guest.Thoigian = groupData.Thoigian;
+                    if (groupData.Diadiem) guest.Diadiem = groupData.Diadiem;
+                }
+                // 3. Extra guests
+                const extraSnap = await firebase.database().ref(`extraGuests/${prefix}`).once('value');
+                const extra = extraSnap.val();
+                if (extra) {
+                    const extraArr = Array.isArray(extra) ? extra : Object.values(extra);
+                    allGuests = [...allGuests, ...extraArr.map((e, i) => ({
+                        ID: `${prefix}X${i}`, Ten: e.Ten, Xungho: e.Xungho || 'Bạn',
+                        Thoigian: guest.Thoigian, Diadiem: guest.Diadiem
+                    }))];
+                }
+            } catch (e) { console.warn('Firebase init/tracking:', e); }
         }
-    } catch (err) {
-        console.error('Could not load guest list:', err);
-        document.getElementById('loadingGuestInfo').classList.add('hidden');
+
+        document.getElementById('guestInfo').classList.remove('hidden');
+        renderLetter(guest);
+    } else {
         document.getElementById('guestError').classList.remove('hidden');
     }
 }
