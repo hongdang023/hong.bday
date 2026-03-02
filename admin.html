@@ -517,6 +517,23 @@
     </style>
 </head>
 
+<!-- Admin Add New Group Modal -->
+<div class="admin-modal-overlay" id="newGroupModal">
+    <div class="admin-modal">
+        <h3 id="newGroupModalTitle">➕ Thêm nhóm mới</h3>
+        <label>Mã nhóm mới (Tối đa 5 chữ cái - VD: VIP, FAN...)</label>
+        <input id="newGroupPrefix" placeholder="Nhập tên viết liền không dấu...">
+        <label>Tên khách đầu tiên</label>
+        <input id="newGroupName" placeholder="VD: Quang">
+        <label>Xưng hô</label>
+        <input id="newGroupXungho" placeholder="VD: Bạn, Chị, Anh...">
+        <div class="admin-modal-actions">
+            <button class="btn-cancel" onclick="closeNewGroupModal()">Hủy</button>
+            <button class="btn-save" onclick="saveNewGroup()">➕ Tạo nhóm</button>
+        </div>
+    </div>
+</div>
+
 <!-- Admin Edit Modal -->
 <div class="admin-modal-overlay" id="editModal">
     <div class="admin-modal">
@@ -618,7 +635,12 @@
 
         <!-- Group Management -->
         <div class="panel">
-            <h2>✏️ Quản lý nhóm — Chốt lịch & Thêm khách</h2>
+            <h2 style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div>✏️ Quản lý nhóm — Chốt lịch & Thêm khách</div>
+                <button onclick="openNewGroupModal()"
+                    style="font-size:0.85rem; padding: 6px 14px; background:#6a5acd;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">➕
+                    Thêm nhóm mới</button>
+            </h2>
             <p style="font-size:0.85rem;color:#888;margin-bottom:16px;">Chốt thời gian và địa điểm → tự động cập nhật
                 trên thiệp mời. Thêm khách → xuất hiện trong "Ai cùng đến?"</p>
             <div id="groupManageContent">
@@ -698,6 +720,26 @@
         // ─── Group guests by ID prefix ────────────────────────────────────────────────
         function getPrefix(id) { return (id.match(/^[A-Za-z]+/) || [id])[0]; }
 
+        function getCombinedGuests() {
+            let combined = [...allGuests];
+            if (extraGuestData) {
+                for (let pref in extraGuestData) {
+                    const arr = Array.isArray(extraGuestData[pref]) ? extraGuestData[pref] : Object.values(extraGuestData[pref]);
+                    arr.forEach((e, i) => {
+                        const override = groupOverrides[pref] || {};
+                        combined.push({
+                            ID: `${pref}X${i}`,
+                            Ten: e.Ten,
+                            Xungho: e.Xungho || 'Bạn',
+                            Thoigian: override.Thoigian || 'Cập nhật sau',
+                            Diadiem: override.Diadiem || 'Cập nhật sau'
+                        });
+                    });
+                }
+            }
+            return combined;
+        }
+
         function groupGuests(guests) {
             const groups = {};
             guests.forEach(g => {
@@ -705,6 +747,12 @@
                 if (!groups[p]) groups[p] = [];
                 groups[p].push(g);
             });
+            // Also ensure prefixes from adminAddedGuests exist, even if CSV is empty for them
+            if (extraGuestData) {
+                for (let pref in extraGuestData) {
+                    if (!groups[pref]) groups[pref] = [];
+                }
+            }
             return groups;
         }
 
@@ -988,14 +1036,42 @@
             const xungho = document.getElementById('addGuestXungho').value.trim() || 'Bạn';
             if (!ten) { alert('Nhập tên khách nhé!'); return; }
             const current = extraGuestData[addingPrefix] ? (Array.isArray(extraGuestData[addingPrefix]) ? extraGuestData[addingPrefix] : Object.values(extraGuestData[addingPrefix])) : [];
-            await adminDB.ref(`extraGuests/${addingPrefix}`).set([...current, { Ten: ten, Xungho: xungho }]);
+            await adminDB.ref(`adminAddedGuests/${addingPrefix}`).set([...current, { Ten: ten, Xungho: xungho }]);
             closeAddGuestModal();
+        }
+
+        function openNewGroupModal() {
+            document.getElementById('newGroupPrefix').value = '';
+            document.getElementById('newGroupName').value = '';
+            document.getElementById('newGroupXungho').value = '';
+            document.getElementById('newGroupModal').classList.add('active');
+        }
+        function closeNewGroupModal() { document.getElementById('newGroupModal').classList.remove('active'); }
+
+        async function saveNewGroup() {
+            const prefixRaw = document.getElementById('newGroupPrefix').value.trim().toUpperCase();
+            const prefix = prefixRaw.replace(/[^A-Z]/g, '').substring(0, 5);
+            const ten = document.getElementById('newGroupName').value.trim();
+            const xungho = document.getElementById('newGroupXungho').value.trim() || 'Bạn';
+
+            if (!prefix) { alert('Mã nhóm không hợp lệ! Vui lòng chỉ nhập các chữ cái.'); return; }
+            if (!ten) { alert('Vui lòng nhập tên người dùng cho nhóm!'); return; }
+
+            if (groupGuests(allGuests)[prefix] || (extraGuestData && extraGuestData[prefix])) {
+                alert('Mã nhóm này đã tồn tại! Vui lòng chọn mã khác hoặc bấm Thêm Khách vào nhóm cũ.');
+                return;
+            }
+
+            await adminDB.ref(`adminAddedGuests/${prefix}`).set([{ Ten: ten, Xungho: xungho }]);
+            closeNewGroupModal();
+            alert(`Tạo nhóm thành công! Đã tạo ID mới là ${prefix}X0. Gửi cho khách link với đuôi: ?id=${prefix}X0`);
+            window.scrollTo(0, 0);
         }
 
         async function removeExtraGuest(prefix, idx) {
             const current = extraGuestData[prefix] ? (Array.isArray(extraGuestData[prefix]) ? extraGuestData[prefix] : Object.values(extraGuestData[prefix])) : [];
             current.splice(idx, 1);
-            await adminDB.ref(`extraGuests/${prefix}`).set(current.length ? current : null);
+            await adminDB.ref(`adminAddedGuests/${prefix}`).set(current.length ? current : null);
         }
 
         // Close modals on overlay click
@@ -1032,7 +1108,7 @@
                     renderGroupManage();
                     renderCalendar(); // calendar may need updated dates
                 });
-                adminDB.ref('extraGuests').on('value', snap => {
+                adminDB.ref('adminAddedGuests').on('value', snap => {
                     extraGuestData = snap.val() || {};
                     renderGroupManage();
                 });

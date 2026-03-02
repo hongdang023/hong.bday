@@ -98,6 +98,16 @@ let currentGuest = null;
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         allGuests = await loadCSV(GUESTS_URL);
+        await firebaseReady;
+        if (firebaseDB) {
+            try {
+                const snap = await firebaseDB.ref('adminAddedGuests').once('value');
+                const extra = snap.val();
+                if (extra) {
+                    allGuests = [...allGuests, ...Object.values(extra)];
+                }
+            } catch (e) { console.warn("Failed loading extra guests", e); }
+        }
     } catch (e) { console.error("Could not load guests:", e); }
 
     initPasswordFlow();
@@ -328,6 +338,19 @@ function renderLetter(guest) {
 
 function initVoteWidget(guest) {
     if (!firebaseReady || !firebaseDB) return;
+
+    const thoigian = (guest.Thoigian || '').trim();
+    const diadiem = (guest.Diadiem || '').trim();
+    const isLocked = !(thoigian.includes('Cập nhật sau') || diadiem.includes('Cập nhật sau'));
+
+    if (isLocked) {
+        const rsvpBtn = document.getElementById('rsvpBtn');
+        if (rsvpBtn) {
+            rsvpBtn.innerText = 'Tôi sẽ tham dự 🎉';
+            rsvpBtn.dataset.isVote = 'false';
+        }
+        return;
+    }
 
     const prefix = guest.ID.match(/^[A-Za-z]+/)?.[0] || '';
     const voteRef = firebaseDB.ref(`votes/${prefix}`);
