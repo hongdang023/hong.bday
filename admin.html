@@ -1076,10 +1076,13 @@
             const poll = allVotes[prefix] || {};
             const options = poll.options || [];
             const responses = poll.responses || {};
-            const total = Object.keys(responses).length;
+            const countParticipants = Object.keys(responses).length;
             const counts = {};
             options.forEach(o => counts[o] = 0);
-            Object.values(responses).forEach(v => { if (counts[v] !== undefined) counts[v]++; });
+            Object.values(responses).forEach(v => {
+                const varr = Array.isArray(v) ? v : (v ? [v] : []);
+                varr.forEach(val => { if (counts[val] !== undefined) counts[val]++; });
+            });
 
             let html = '';
             const color = getGroupColor(prefix);
@@ -1087,9 +1090,12 @@
             if (options.length > 0) {
                 html += options.map(opt => {
                     const cnt = counts[opt] || 0;
-                    const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+                    const pct = countParticipants > 0 ? Math.round((cnt / countParticipants) * 100) : 0;
                     const voters = Object.entries(responses)
-                        .filter(([, v]) => v === opt)
+                        .filter(([, v]) => {
+                            const arr = Array.isArray(v) ? v : (v ? [v] : []);
+                            return arr.includes(opt);
+                        })
                         .map(([gid]) => { const g = allGuests.find(x => x.ID === gid); return g ? g.Ten : gid; }).join(', ');
 
                     return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:0.9rem;">
@@ -1097,7 +1103,7 @@
                         <div style="flex:1;background:#e0d8ff;border-radius:6px;height:12px;overflow:hidden;">
                             <div style="width:${pct}%;background:${color};height:100%;border-radius:6px;transition:width 0.4s;"></div>
                         </div>
-                        <span style="min-width:40px;color:#666;text-align:right;">${cnt}/${total}</span>
+                        <span style="min-width:40px;color:#666;text-align:right;">${cnt}/${countParticipants}</span>
                     </div>
                     ${voters ? `<div style="font-size:0.75rem; color:#888; margin-top:-4px; margin-bottom:12px; padding-left:168px">${voters}</div>` : '<div style="margin-bottom:12px;"></div>'}`;
                 }).join('');
@@ -1137,7 +1143,16 @@
         }
 
         function deletePoll(prefix) {
-            if (confirm(`Xóa poll của nhóm [${prefix}]?`)) adminDB.ref(`votes/${prefix}`).remove();
+            if (confirm(`Xóa poll của nhóm [${prefix}]?`)) {
+                adminDB.ref(`votes/${prefix}`).remove()
+                    .then(() => {
+                        alert('Đã xóa poll!');
+                        if (document.getElementById('voteWidgetModal')) {
+                            document.getElementById('voteWidgetModal').classList.remove('active');
+                        }
+                    })
+                    .catch(e => alert('Lỗi: ' + e.message));
+            }
         }
 
         initAdminFirebase();

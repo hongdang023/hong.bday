@@ -292,6 +292,12 @@ function renderLetter(guest) {
         await initWishlist();
     });
 
+    document.getElementById('backToInviteBtn')?.addEventListener('click', () => {
+        document.getElementById('wishlistSection').classList.add('hidden');
+        document.getElementById('invitationSection').classList.remove('hidden');
+        window.scrollTo(0, 0);
+    });
+
     // RSVP CTA
     document.getElementById('rsvpBtn').addEventListener('click', () => {
         if (document.getElementById('rsvpBtn').dataset.isVote === 'true') {
@@ -343,28 +349,30 @@ function initVoteWidget(guest) {
         rsvpBtn.innerText = 'Vote lịch tham gia tại đây 📅';
         rsvpBtn.dataset.isVote = 'true';
 
-        const myVote = data.responses ? data.responses[guest.ID] : null;
+        const myVoteRaw = data.responses ? data.responses[guest.ID] : [];
+        const myVotes = Array.isArray(myVoteRaw) ? myVoteRaw : (myVoteRaw ? [myVoteRaw] : []);
 
         // Count votes per option
         const counts = {};
         data.options.forEach(o => counts[o] = 0);
         if (data.responses) {
             Object.values(data.responses).forEach(v => {
-                if (counts[v] !== undefined) counts[v]++;
+                const varr = Array.isArray(v) ? v : (v ? [v] : []);
+                varr.forEach(opt => { if (counts[opt] !== undefined) counts[opt]++; });
             });
         }
-        const total = Object.values(counts).reduce((a, b) => a + b, 0);
+        const totalParticipants = data.responses ? Object.keys(data.responses).length : 0;
 
         voteModalBody.innerHTML = `
             <div class="vote-section" style="border:none; padding:10px 0 0 0; background:none;">
                 <p class="letter-p" style="text-align:center; font-size: 0.95rem; margin-bottom:16px;">
-                    Hồng đang chốt lịch cho nhóm mình — ${guest.Xungho} chọn ngày nào tiện nhất nhé!
+                    Hồng đang chốt lịch cho nhóm mình — ${guest.Xungho} chọn các ngày tiện tham gia nhé (có thể chọn nhiều)!
                 </p>
                 <div class="vote-options">
                     ${data.options.map(option => {
             const count = counts[option] || 0;
-            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-            const isMyVote = myVote === option;
+            const pct = totalParticipants > 0 ? Math.round((count / totalParticipants) * 100) : 0;
+            const isMyVote = myVotes.includes(option);
             return `
                         <button class="vote-btn ${isMyVote ? 'voted' : ''}"
                                 data-option="${option}"
@@ -378,7 +386,7 @@ function initVoteWidget(guest) {
                         </button>`;
         }).join('')}
                 </div>
-                ${myVote ? `<p class="vote-caption">Bạn đã chọn: <strong>${myVote}</strong> — bấm vào ngày khác để đổi ý.</p>` : ''}
+                ${myVotes.length > 0 ? `<p class="vote-caption">Bạn đã chọn: <strong>${myVotes.join(' và ')}</strong> — nhấn vào ngày đã chọn để hủy, hoặc chọn thêm ngày khác.</p>` : ''}
                 
                 <div style="margin-top:20px; font-size: 0.85rem; color: var(--secondary-color); font-style: italic; text-align: center; border-top: 1px dashed #d0b8ff; padding-top: 15px;">
                     * Lưu ý: Lịch trình chốt cứng (thời gian & địa điểm) sẽ được chúng mình cập nhật thêm qua Google Calendar nhé!
@@ -391,7 +399,19 @@ function initVoteWidget(guest) {
                 const opt = btn.dataset.option;
                 const pref = btn.dataset.prefix;
                 const gid = btn.dataset.guestid;
-                firebaseDB.ref(`votes/${pref}/responses/${gid}`).set(opt);
+
+                let currentVotes = [...myVotes]; // copy current votes array
+                if (currentVotes.includes(opt)) {
+                    currentVotes = currentVotes.filter(v => v !== opt); // toggle off
+                } else {
+                    currentVotes.push(opt); // toggle on
+                }
+
+                if (currentVotes.length === 0) {
+                    firebaseDB.ref(`votes/${pref}/responses/${gid}`).remove();
+                } else {
+                    firebaseDB.ref(`votes/${pref}/responses/${gid}`).set(currentVotes);
+                }
             });
         });
     });
